@@ -118,7 +118,10 @@ async function fetchJson(url) {
     }
 
     try {
-      return await response.json();
+      const data = await response.json();
+      // U3-1 (paso 2): mostrar en consola los datos recibidos del GET
+      console.log('[CoinGecko] GET', url, data);
+      return data;
     } catch (error) {
       throw new ApiError(
         'invalid',

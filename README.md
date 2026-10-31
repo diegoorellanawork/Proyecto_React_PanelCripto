@@ -34,6 +34,38 @@ con precios de `/simple/price`. Se validan precios numéricos, finitos y mayores
 cero; si faltan no se asume ninguna tasa. Cambiar la cantidad recalcula en memoria
 sin nuevas peticiones. Admite coma decimal.
 
+## API utilizada (U3-1)
+
+- **API:** CoinGecko API v3 (pública, gratuita, sin clave obligatoria)
+- **URL base:** `https://api.coingecko.com/api/v3`
+- **Documentación:** https://docs.coingecko.com
+- **Endpoint principal (lista del Mercado):**
+  `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1`
+- **Otros endpoints usados:** `/coins/{id}` (detalle), `/simple/price` (convertidor),
+  `/search` (búsqueda) y `/global` (resumen del mercado).
+
+**Cómo se consume:**
+
+1. `src/services/cryptoApi.js` hace el `fetch` (GET), convierte la respuesta con
+   `res.json()` y muestra los datos en la consola del navegador con `console.log`.
+2. `src/hooks/useApiResource.js` guarda los datos con `useState` y lanza la
+   petición dentro de `useEffect`.
+3. `src/pages/MarketPage.jsx` renderiza la lista con `.map` usando el componente
+   `CoinCard` (props).
+4. Mientras llegan los datos se muestra `LoadingSpinner`; si falla, `ErrorState`
+   con un botón para reintentar.
+
+## Etapa 1: página estática (U1-2 y U1-3)
+
+La carpeta `etapa1-estatica/` contiene la maqueta en HTML, CSS y JavaScript puros:
+
+- `index.html`: estructura semántica (`header`, `nav`, `main`, `section`, `footer`).
+- `css/styles.css`: hoja de estilos externa con Flexbox, Grid y diseño responsivo.
+- `js/app.js`: menú que se abre y cierra, lista de seguimiento que agrega
+  elementos al DOM con contador, y validación del formulario de contacto.
+
+Para verla, abre `etapa1-estatica/index.html` en el navegador.
+
 ## Puesta en marcha
 
 ```bash
