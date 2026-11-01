@@ -55,6 +55,40 @@ sin nuevas peticiones. Admite coma decimal.
 4. Mientras llegan los datos se muestra `LoadingSpinner`; si falla, `ErrorState`
    con un botón para reintentar.
 
+## Avance U3-2: lista real en pantalla
+
+El GET de la semana anterior ahora se muestra como una lista real en la vista
+**Mercado** (`/`).
+
+1. **Carga con `fetch` dentro de `useEffect`:** el `useEffect` de
+   `src/hooks/useApiResource.js` llama al servicio `src/services/cryptoApi.js`,
+   que hace el `fetch` a `/coins/markets` y convierte la respuesta con `res.json()`.
+   El `fetch` está en un servicio aparte para reutilizarlo en todas las vistas;
+   igual se ejecuta dentro del `useEffect`. Al desmontar el componente, una
+   bandera `cancelled` evita actualizar el estado con respuestas viejas.
+2. **Tres estados:** el hook devuelve `data` (datos), `loading` (cargando) y
+   `error` (error), guardados con `useState`.
+3. **Lista con `.map()` y `key` único:** `src/pages/MarketPage.jsx` recorre las
+   monedas con `.map()` y usa el id de CoinGecko como clave:
+   `<li key={coin.id}><CoinCard coin={coin} /></li>`.
+4. **Mensajes al usuario:**
+   - Cargando: se muestra el texto "Cargando datos del mercado…" con tarjetas
+     de esqueleto (`CardGridSkeleton`).
+   - Error: `ErrorState` muestra "No se pudo cargar el mercado", un mensaje
+     entendible (sin conexión, límite de peticiones, etc.) y un botón
+     **Reintentar**. Si ya había datos, se conservan con un aviso de que pueden
+     estar desactualizados.
+
+**Cómo verificarlo (DevTools, F12):**
+
+- *Datos:* en **Network** aparece la petición `markets` con estado 200, y en
+  **Console** el log `[CoinGecko] GET …`.
+- *Cargando:* en **Network**, poner el throttling en "Slow 3G" y recargar.
+- *Error:* en **Network**, elegir "Offline" y recargar; luego volver a la
+  conexión normal y pulsar **Reintentar**.
+- *Key:* en la consola no aparece la advertencia de React sobre `key`
+  faltante.
+
 ## Etapa 1: página estática (U1-2 y U1-3)
 
 La carpeta `etapa1-estatica/` contiene la maqueta en HTML, CSS y JavaScript puros:
