@@ -89,6 +89,48 @@ El GET de la semana anterior ahora se muestra como una lista real en la vista
 - *Key:* en la consola no aparece la advertencia de React sobre `key`
   faltante.
 
+## Avance U3-3: estado compartido sin prop drilling
+
+**1. Estado compartido identificado:** la lista de **favoritos** (`favoriteIds`).
+La necesitan tres componentes que están en partes distintas del árbol:
+
+| Componente | Qué hace con el estado |
+| --- | --- |
+| `src/components/common/FavoriteButton.jsx` | Marca o desmarca una moneda (`isFavorite`, `toggleFavorite`) |
+| `src/components/layout/Navbar.jsx` | Muestra la cantidad de favoritos junto a "Portafolio" (`favoriteIds.length`) |
+| `src/pages/PortafolioPage.jsx` | Lista los favoritos y permite quitarlos (`favoriteIds`, `removeFavorite`) |
+
+**2. Decisión: Context API** (no Redux Toolkit).
+- El estado es pequeño (una lista de ids) y tiene pocas acciones: marcar/desmarcar y quitar.
+- Context viene incluido en React: no hay que instalar dependencias.
+- Redux Toolkit sería útil si el estado global creciera mucho (varios módulos,
+  muchas acciones o herramientas de depuración); para este proyecto sería exceso.
+
+**Archivos:**
+- `src/context/favoritesContext.js`: crea el contexto con `createContext`.
+- `src/context/FavoritesProvider.jsx`: guarda los favoritos con `useState` y
+  entrega el valor con `FavoritesContext.Provider` (con `useMemo` y `useCallback`
+  para evitar renders innecesarios).
+- `src/context/useFavorites.js`: hook personalizado que lee el contexto con
+  `useContext` y avisa si se usa fuera del Provider.
+- `src/App.jsx`: `<FavoritesProvider>` envuelve todas las rutas.
+
+**3. Sin prop drilling:** ningún componente recibe los favoritos por props.
+Cada uno llama a `useFavorites()` justo donde los necesita. Sin Context, habría que
+pasar `favoriteIds` y `toggleFavorite` desde `App` → `Layout` → `MarketPage` →
+`CoinCard` → `FavoriteButton`, aunque los intermedios no los usaran.
+
+**4. Verificación:** en **Mercado**, al pulsar la estrella de una moneda:
+- la estrella cambia de estado;
+- el número junto a **Portafolio** en el menú aumenta;
+- la moneda aparece en la página **Portafolio**.
+
+Al quitarla desde Portafolio, el número del menú baja y la estrella se desmarca
+en Mercado. Los tres puntos se actualizan a la vez porque leen el mismo contexto.
+
+> El mismo patrón se usa para el idioma (`LanguageProvider` + `useLanguage`),
+> que lo leen casi todos los componentes.
+
 ## Etapa 1: página estática (U1-2 y U1-3)
 
 La carpeta `etapa1-estatica/` contiene la maqueta en HTML, CSS y JavaScript puros:
