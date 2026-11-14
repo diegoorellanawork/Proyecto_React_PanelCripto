@@ -131,6 +131,36 @@ en Mercado. Los tres puntos se actualizan a la vez porque leen el mismo contexto
 > El mismo patrón se usa para el idioma (`LanguageProvider` + `useLanguage`),
 > que lo leen casi todos los componentes.
 
+## Avance U3-4: pruebas + código limpio
+
+**1. Vitest + React Testing Library:** instalados como dependencias de desarrollo
+(`vitest`, `jsdom`, `@testing-library/react`, `@testing-library/jest-dom`,
+`@testing-library/user-event`).
+- `package.json`: scripts `"test": "vitest"` y `"lint:fix": "eslint . --fix"`.
+- `vite.config.js`: sección `test` con `environment: 'jsdom'` (navegador simulado).
+- `src/setupTests.js`: activa los comparadores de jest-dom (`toBeInTheDocument`,
+  `toHaveAttribute`) y limpia lo renderizado después de cada prueba.
+
+**2. Prueba unitaria de una función** (`src/utils/formatters.test.js`):
+- `getTrend` devuelve `'up'`, `'down'` o `'flat'` según la variación de 24 h,
+  redondea a 2 decimales y devuelve `null` si el valor no es un número.
+- `formatRank` devuelve `#1` o un guion si no hay puesto.
+
+**3. Prueba de un componente con `render` + `screen`**
+(`src/components/common/FavoriteButton.test.jsx`): se renderiza `FavoriteButton`
+dentro de `LanguageProvider` y `FavoritesProvider`, y se busca con
+`screen.getByRole('button', { name: 'Añadir Bitcoin a favoritos' })` y
+`screen.getByText('Añadir a favoritos')`.
+
+**4. Clic con `userEvent`:** `await user.click(...)` sobre el botón y se verifica
+que cambia a "Quitar Bitcoin de favoritos" con `aria-pressed="true"`; un segundo
+clic lo devuelve a su estado inicial. Esto también prueba el Context de U3-3.
+
+**5. ESLint:** `npm run lint:fix` (`eslint . --fix`) y `npm run lint` terminan
+sin errores ni advertencias.
+
+**Resultado:** `npm test` → 2 archivos y 10 pruebas pasan.
+
 ## Etapa 1: página estática (U1-2 y U1-3)
 
 La carpeta `etapa1-estatica/` contiene la maqueta en HTML, CSS y JavaScript puros:
@@ -148,6 +178,8 @@ Para verla, abre `etapa1-estatica/index.html` en el navegador.
 npm install
 npm run dev      # desarrollo
 npm run lint
+npm run lint:fix # corrige automáticamente lo que ESLint pueda
+npm test         # pruebas con Vitest (q para salir del modo watch)
 npm run build
 npm run preview
 ```
